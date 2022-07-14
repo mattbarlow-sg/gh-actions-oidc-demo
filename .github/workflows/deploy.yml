@@ -1,0 +1,26 @@
+on: [push, workflow_dispatch]
+jobs:
+  aws_cdk:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+      - name: Configure AWS credentials from Test account
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::973081273628:role/gh-actions-role
+          aws-region: us-east-1
+      - name: Install dependencies
+        run: npm install -g aws-cdk
+      - name: Install required packages
+        run: pip install -r requirements.txt
+      - name: Synth stack
+        run: cdk synth
+      - name: Deploy stack
+        run: cdk deploy --all --require-approval never
